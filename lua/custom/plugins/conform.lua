@@ -17,6 +17,7 @@ return {
       css = { 'prettier' },
       scss = { 'prettier' },
       lua = { 'stylua' },
+      ruby = { 'rubocop' },
     },
     formatters = {
       prettier = {
@@ -27,6 +28,16 @@ return {
           '.prettierrc.js',
           '.prettierrc.json',
           'package.json',
+        },
+      },
+      rubocop = {
+        command = '~/.local/bin/rubocop-docker-wrapper.sh',
+        args = { '--auto-correct', '--stdin', '$FILENAME', '-f', 'quiet' },
+        stdin = true,
+        cwd = require('conform.util').root_file {
+          '.rubocop.yml',
+          '.rubocop_todo.yml',
+          'Gemfile',
         },
       },
     },
