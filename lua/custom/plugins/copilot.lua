@@ -15,6 +15,10 @@ return {
         },
       },
       panel = { enabled = false }, -- you can enable this later
+      filetypes = {
+        gitcommit = true,
+        ['*'] = true,
+      },
     }
   end,
 }
