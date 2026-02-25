@@ -1,10 +1,12 @@
 return {
   'stevearc/conform.nvim',
   opts = {
-    format_on_save = {
-      lsp_fallback = true,
-      timeout_ms = 500,
-    },
+    format_on_save = function()
+      return {
+        timeout_ms = 500,
+        lsp_format = 'fallback',
+      }
+    end,
     formatters_by_ft = {
       javascript = { 'eslint_d', 'prettier' },
       typescript = { 'eslint_d', 'prettier' },
@@ -17,6 +19,8 @@ return {
       css = { 'prettier' },
       scss = { 'prettier' },
       lua = { 'stylua' },
+      gherkin = { 'reformat_gherkin' },
+      cucumber = { 'reformat_gherkin' },
     },
     formatters = {
       prettier = {
@@ -28,6 +32,11 @@ return {
           '.prettierrc.json',
           'package.json',
         },
+      },
+      reformat_gherkin = {
+        command = 'reformat-gherkin',
+        args = { '--multi-line-tags', '-' },
+        stdin = true,
       },
     },
   },

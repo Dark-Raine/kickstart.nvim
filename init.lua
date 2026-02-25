@@ -700,6 +700,86 @@ require('lazy').setup({
             },
           },
         },
+        cucumber_language_server = {
+          cmd = {
+            'node',
+            vim.fn.stdpath 'config' .. '/lua/custom/cucumber-language-server-wrapper.cjs',
+            '--stdio',
+          },
+          cmd_env = {
+            CUCUMBER_LS_ROOT = vim.fn.stdpath 'data' .. '/mason/packages/cucumber-language-server',
+          },
+          before_init = function(_, config)
+            -- Ensure cucumber-language-server resolves glue files from the workspace root.
+            config.cmd_cwd = config.root_dir
+          end,
+          filetypes = { 'cucumber', 'gherkin' },
+          settings = {
+            cucumber = {
+              -- Keep defaults, plus nested patterns for monorepos/workspaces.
+              features = {
+                'src/test/**/*.feature',
+                'features/**/*.feature',
+                'tests/**/*.feature',
+                '*specs*/**/*.feature',
+                '**/src/test/**/*.feature',
+                '**/features/**/*.feature',
+                '**/tests/**/*.feature',
+                '**/*specs*/**/*.feature',
+              },
+              glue = {
+                'src/test/**/*.java',
+                'features/**/*.ts',
+                'features/**/*.tsx',
+                'features/**/*.js',
+                'features/**/*.jsx',
+                'features/**/*.php',
+                'features/**/*.py',
+                'tests/**/*.py',
+                'tests/**/*.rs',
+                'features/**/*.rs',
+                'features/**/*.rb',
+                '*specs*/**/*.cs',
+                'features/**/*_test.go',
+                '**/src/test/**/*.java',
+                '**/features/**/*.ts',
+                '**/features/**/*.tsx',
+                '**/features/**/*.js',
+                '**/features/**/*.jsx',
+                '**/features/**/*.php',
+                '**/features/**/*.py',
+                '**/tests/**/*.py',
+                '**/tests/**/*.rs',
+                '**/features/**/*.rs',
+                '**/features/**/*.rb',
+                '**/*specs*/**/*.cs',
+                '**/features/**/*_test.go',
+                '**/step_definitions/**/*.java',
+                '**/step_definitions/**/*.ts',
+                '**/step_definitions/**/*.tsx',
+                '**/step_definitions/**/*.js',
+                '**/step_definitions/**/*.jsx',
+                '**/step_definitions/**/*.php',
+                '**/step_definitions/**/*.py',
+                '**/step_definitions/**/*.rs',
+                '**/step_definitions/**/*.rb',
+                '**/step_definitions/**/*.cs',
+                '**/step_definitions/**/*_test.go',
+                '**/steps/**/*.java',
+                '**/steps/**/*.ts',
+                '**/steps/**/*.tsx',
+                '**/steps/**/*.js',
+                '**/steps/**/*.jsx',
+                '**/steps/**/*.php',
+                '**/steps/**/*.py',
+                '**/steps/**/*.rs',
+                '**/steps/**/*.rb',
+                '**/steps/**/*.cs',
+                '**/steps/**/*_test.go',
+              },
+            },
+          },
+        },
       }
 
       -- Ensure the servers and tools above are installed
@@ -721,19 +801,22 @@ require('lazy').setup({
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
+      for server_name, server in pairs(servers) do
+        -- This handles overriding only values explicitly passed
+        -- by the server configuration above. Useful when disabling
+        -- certain features of an LSP (for example, turning off formatting for ts_ls)
+        server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+
+        if vim.fn.has 'nvim-0.11' == 1 then
+          vim.lsp.config(server_name, server)
+        else
+          require('lspconfig')[server_name].setup(server)
+        end
+      end
+
       require('mason-lspconfig').setup {
         ensure_installed = {}, -- explicitly set to an empty table (Kickstart populates installs via mason-tool-installer)
-        automatic_installation = false,
-        handlers = {
-          function(server_name)
-            local server = servers[server_name] or {}
-            -- This handles overriding only values explicitly passed
-            -- by the server configuration above. Useful when disabling
-            -- certain features of an LSP (for example, turning off formatting for ts_ls)
-            server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-            require('lspconfig')[server_name].setup(server)
-          end,
-        },
+        automatic_enable = true,
       }
     end,
   },
