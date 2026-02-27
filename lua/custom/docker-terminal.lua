@@ -33,9 +33,44 @@ local function get_or_create_term(key, cmd, direction)
 end
 
 local function list_docker_containers(callback)
+  local function show_picker(containers)
+    local choices = { 'Local machine' }
+    for _, c in ipairs(containers) do
+      table.insert(choices, c)
+    end
+
+    local prompt = (#containers == 0) and 'No containers running. Open a local shell?' or 'Choose where to open a shell:'
+    vim.ui.select(choices, { prompt = prompt }, function(choice)
+      if not choice then
+        return
+      end
+      callback(choice)
+    end)
+  end
+
+  if vim.fn.executable 'docker' == 0 then
+    show_picker {}
+    return
+  end
+
+  -- Prefer async shelling so the UI does not block when Docker is slow.
+  if vim.system then
+    vim.system({ 'docker', 'ps', '--format', '{{.Names}}' }, { text = true }, function(obj)
+      local containers = {}
+      local output = (obj.code == 0 and obj.stdout) or ''
+      for name in output:gmatch '[^\r\n]+' do
+        table.insert(containers, name)
+      end
+      vim.schedule(function()
+        show_picker(containers)
+      end)
+    end)
+    return
+  end
+
+  -- Fallback for older Neovim versions.
   local handle = io.popen "docker ps --format '{{.Names}}'"
   local containers = {}
-
   if handle then
     local result = handle:read '*a'
     handle:close()
@@ -43,21 +78,7 @@ local function list_docker_containers(callback)
       table.insert(containers, name)
     end
   end
-
-  -- Always offer local shell
-  local choices = { 'Local machine' }
-  for _, c in ipairs(containers) do
-    table.insert(choices, c)
-  end
-
-  local prompt = (#containers == 0) and 'No containers running. Open a local shell?' or 'Choose where to open a shell:'
-
-  vim.ui.select(choices, { prompt = prompt }, function(choice)
-    if not choice then
-      return
-    end
-    callback(choice)
-  end)
+  show_picker(containers)
 end
 
 --- Public: open picker (reuses terminals by target)
