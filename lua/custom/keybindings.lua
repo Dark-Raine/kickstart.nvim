@@ -4,6 +4,8 @@ vim.keymap.set('i', 'jj', '<Esc>', { noremap = true, silent = true })
 -- cycle through buffers/tabs
 vim.keymap.set('n', '<Tab>', '<cmd>BufferLineCycleNext<CR>', { desc = 'Next buffer' })
 vim.keymap.set('n', '<S-Tab>', '<cmd>BufferLineCyclePrev<CR>', { desc = 'Previous buffer' })
+vim.keymap.set('n', '<M-.>', '<cmd>BufferLineMoveNext<CR>', { desc = 'Move buffer right' })
+vim.keymap.set('n', '<M-,>', '<cmd>BufferLineMovePrev<CR>', { desc = 'Move buffer left' })
 -- close current buffer
 vim.keymap.set('n', '<leader>bx', '<cmd>bdelete<CR>', { desc = 'Close current buffer' })
 vim.keymap.set('n', '<leader>gb', function()

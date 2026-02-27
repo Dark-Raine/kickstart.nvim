@@ -20,6 +20,8 @@ return {
       dashboard.button('e', '  New File', ':ene <BAR> startinsert <CR>'),
       dashboard.button('f', '  Find File', ':Telescope find_files<CR>'),
       dashboard.button('r', '  Recent Files', ':Telescope oldfiles<CR>'),
+      dashboard.button('s', '  Restore Session', ":lua require('persistence').load()<CR>"),
+      dashboard.button('S', '  Select Session', ":lua require('persistence').select()<CR>"),
       dashboard.button('p', '  Projects', ':Telescope projects<CR>'),
       dashboard.button('q', '  Quit Neovim', ':qa<CR>'),
     }

@@ -672,6 +672,7 @@ require('lazy').setup({
       --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
+      local lspconfig_util = require 'lspconfig.util'
       local servers = {
         -- clangd = {},
         -- gopls = {},
@@ -683,8 +684,30 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
-        --
+        ts_ls = {},
+
+        eslint = {
+          root_dir = lspconfig_util.root_pattern(
+            'eslint.config.js',
+            'eslint.config.cjs',
+            'eslint.config.mjs',
+            'eslint.config.ts',
+            'eslint.config.cts',
+            'eslint.config.mts',
+            '.eslintrc',
+            '.eslintrc.js',
+            '.eslintrc.cjs',
+            '.eslintrc.yaml',
+            '.eslintrc.yml',
+            '.eslintrc.json',
+            'package.json',
+            '.git'
+          ),
+          settings = {
+            workingDirectory = { mode = 'auto' },
+            format = false,
+          },
+        },
 
         lua_ls = {
           -- cmd = { ... },
@@ -979,6 +1002,20 @@ require('lazy').setup({
           { name = 'nvim_lsp_signature_help' },
         },
       }
+
+      cmp.setup.filetype({ 'cucumber', 'gherkin' }, {
+        completion = {
+          completeopt = 'menu,menuone,noinsert',
+          keyword_length = 0,
+          autocomplete = {
+            require('cmp.types').cmp.TriggerEvent.TextChanged,
+            require('cmp.types').cmp.TriggerEvent.InsertEnter,
+          },
+        },
+        sources = {
+          { name = 'nvim_lsp' },
+        },
+      })
     end,
   },
 
